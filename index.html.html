@@ -27,6 +27,7 @@
         <button onclick="showSection('timer')" class="nav-btn active" id="nav-timer">Timer</button>
         <button onclick="showSection('log')" class="nav-btn" id="nav-log">Session Log</button>
         <button onclick="showSection('library')" class="nav-btn" id="nav-library">Game Library</button>
+        <button onclick="showSection('settings')" class="nav-btn" id="nav-settings">Settings</button>
       </div>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
         <svg id="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -81,7 +82,6 @@
           <option value="Zelda: Tears of the Kingdom">Zelda: Tears of the Kingdom</option>
           <option value="custom">✏️ Type my own...</option>
         </select>
-        <!-- Shown only when "Type my own" is selected -->
         <input type="text" id="game-custom-input" class="game-custom-input hidden" placeholder="Enter game name..." />
       </div>
 
@@ -133,12 +133,8 @@
       </div>
 
       <div class="log-stats">
-        <div class="stat-pill">
-          <span id="total-sessions">0</span> sessions
-        </div>
-        <div class="stat-pill">
-          <span id="total-time">0</span> mins total
-        </div>
+        <div class="stat-pill"><span id="total-sessions">0</span> sessions</div>
+        <div class="stat-pill"><span id="total-time">0</span> mins total</div>
       </div>
 
       <div id="log-list" class="log-list">
@@ -156,13 +152,68 @@
         <h2 class="log-title">🎮 Game Library</h2>
       </div>
 
-      <!-- Weekly nudge shown when playtime exceeds 15 hrs -->
       <div id="wellness-nudge" class="wellness-nudge hidden">
         🧘 You've logged a lot of gaming this week. Remember to stretch, hydrate, and rest your eyes!
       </div>
 
       <div id="library-grid" class="library-grid">
         <div class="log-empty" id="library-empty">No games tracked yet. Start a session to build your library.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SETTINGS SECTION ── -->
+  <section id="settings-section" class="section hidden">
+    <div class="settings-card">
+
+      <h2 class="log-title">⚙️ Settings</h2>
+      <p class="timer-subtitle" style="margin-top: -8px;">Your preferences are saved automatically.</p>
+
+      <!-- Sound style preference -->
+      <div class="settings-group">
+        <div class="settings-label">End-of-session sound</div>
+        <div class="settings-description">Choose what plays when your timer finishes.</div>
+        <div class="sound-options">
+
+          <div class="sound-option" id="sound-opt-chime" onclick="selectSound('chime')">
+            <div class="sound-option-icon">🧘</div>
+            <div class="sound-option-info">
+              <div class="sound-option-name">Calm Chime</div>
+              <div class="sound-option-desc">Soft meditation bell</div>
+            </div>
+            <button class="preview-btn" onclick="event.stopPropagation(); previewSound('chime')">▶ Preview</button>
+          </div>
+
+          <div class="sound-option" id="sound-opt-game" onclick="selectSound('game')">
+            <div class="sound-option-icon">🎮</div>
+            <div class="sound-option-info">
+              <div class="sound-option-name">Game Complete</div>
+              <div class="sound-option-desc">Achievement unlock style</div>
+            </div>
+            <button class="preview-btn" onclick="event.stopPropagation(); previewSound('game')">▶ Preview</button>
+          </div>
+
+          <div class="sound-option" id="sound-opt-none" onclick="selectSound('none')">
+            <div class="sound-option-icon">🔇</div>
+            <div class="sound-option-info">
+              <div class="sound-option-name">No Sound</div>
+              <div class="sound-option-desc">Silent finish</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Volume slider -->
+      <div class="settings-group" id="volume-group">
+        <div class="settings-label">Volume</div>
+        <div class="volume-row">
+          <span class="volume-icon">🔈</span>
+          <input type="range" id="volume-slider" class="volume-slider" min="0" max="100" value="70" oninput="updateVolume(this.value)" />
+          <span class="volume-icon">🔊</span>
+          <span class="volume-value" id="volume-value">70%</span>
+        </div>
       </div>
 
     </div>
@@ -184,9 +235,14 @@
 
   <!-- ── REFLECTION MODAL (post-session) ── -->
   <div id="reflection-modal" class="modal-overlay hidden">
-    <div class="modal">
+    <div class="modal reflection-modal-inner">
+      <!-- Pulsing ring around the checkmark -->
+      <div class="completion-ring">
+        <div class="completion-ring-pulse"></div>
+        <div class="completion-check">✓</div>
+      </div>
       <h2 class="modal-title">Session Complete! 🎉</h2>
-      <p class="modal-subtitle">How are you feeling?</p>
+      <p class="modal-subtitle">Take a breath. How are you feeling?</p>
       <div class="mood-options">
         <button class="mood-btn" onclick="selectMood('😤', 'Frustrated')">😤<span>Frustrated</span></button>
         <button class="mood-btn" onclick="selectMood('😐', 'Meh')">😐<span>Meh</span></button>
