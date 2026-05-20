@@ -7,17 +7,59 @@ let sessionStartTime = null;
 let isDark = true;
 let currentGame = "";
 let currentIntention = "";
-let pendingSession = null; // holds session data while reflection modal is open
+let pendingSession = null;
 
-// Load sessions and preferences from localStorage on startup
+// Load sessions and preferences from localStorage
 let sessions = JSON.parse(localStorage.getItem("sessions") || "[]");
-let preferences = JSON.parse(localStorage.getItem("preferences") || '{"sound":"chime","volume":70}');
+let preferences = JSON.parse(localStorage.getItem("preferences") || '{"sound":"chime","volume":70,"scheme":"purple"}');
 
-// ── Web Audio Context (created once on first interaction) ──
+// ── Color Schemes ──
+
+// Each scheme defines an accent and a slightly darker hover shade
+const COLOR_SCHEMES = {
+  purple: { accent: "#6c63ff", hover: "#5a52e0" },
+  blue:   { accent: "#3b82f6", hover: "#2563eb" },
+  green:  { accent: "#22c55e", hover: "#16a34a" },
+  red:    { accent: "#ef4444", hover: "#dc2626" },
+  orange: { accent: "#f97316", hover: "#ea6a0a" },
+  pink:   { accent: "#ec4899", hover: "#db2777" }
+};
+
+function selectScheme(name) {
+  preferences.scheme = name;
+  savePreferences();
+  applyScheme(name);
+  updateSchemeSwatches(name);
+}
+
+function applyScheme(name) {
+  let scheme = COLOR_SCHEMES[name] || COLOR_SCHEMES.purple;
+  let root = document.documentElement;
+
+  // Swap the two accent CSS variables globally — everything updates instantly
+  root.style.setProperty("--accent", scheme.accent);
+  root.style.setProperty("--accent-hover", scheme.hover);
+
+  // Also update the swatch ring color to match
+  root.style.setProperty("--swatch-ring", scheme.accent);
+
+  // Mark which scheme is active on the html element for CSS targeting
+  root.setAttribute("data-scheme", name);
+}
+
+function updateSchemeSwatches(activeName) {
+  // Add/remove the selected ring on each swatch
+  document.querySelectorAll(".swatch").forEach(function(swatch) {
+    swatch.classList.toggle("selected", swatch.dataset.scheme === activeName);
+  });
+}
+
+// ── Web Audio Context ──
+
 let audioCtx = null;
 
 function getAudioContext() {
-  // Browsers require a user gesture before allowing audio
+  // Must be created after a user gesture
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
@@ -27,7 +69,7 @@ function getAudioContext() {
 // ── Sound Engine ──
 
 function playChime(volume) {
-  // Soft meditation bell — two sine tones that fade out gently
+  // Soft meditation bell — three sine tones that fade out gently
   let ctx = getAudioContext();
   let vol = (volume / 100) * 0.6;
 
@@ -47,7 +89,7 @@ function playChime(volume) {
 }
 
 function playGameSound(volume) {
-  // Achievement unlock — ascending arpeggio with a punchy attack
+  // Achievement unlock — ascending arpeggio with punchy attack
   let ctx = getAudioContext();
   let vol = (volume / 100) * 0.5;
 
@@ -67,14 +109,12 @@ function playGameSound(volume) {
 }
 
 function playEndSound() {
-  // Play whichever sound the user has selected in settings
+  // Play whichever sound the user selected
   if (preferences.sound === "chime") playChime(preferences.volume);
   else if (preferences.sound === "game") playGameSound(preferences.volume);
-  // "none" plays nothing
 }
 
 function previewSound(type) {
-  // Let user test each sound from the settings page
   if (type === "chime") playChime(preferences.volume);
   else if (type === "game") playGameSound(preferences.volume);
 }
@@ -98,19 +138,21 @@ function savePreferences() {
 }
 
 function updateSettingsUI() {
-  // Highlight the selected sound option card
+  // Highlight selected sound card
   ["chime", "game", "none"].forEach(function(type) {
     let el = document.getElementById("sound-opt-" + type);
     if (el) el.classList.toggle("selected", preferences.sound === type);
   });
 
-  // Hide volume slider if sound is off
-  let volumeGroup = document.getElementById("volume-group");
-  volumeGroup.classList.toggle("hidden", preferences.sound === "none");
+  // Hide volume when sound is off
+  document.getElementById("volume-group").classList.toggle("hidden", preferences.sound === "none");
 
-  // Sync slider position and label
+  // Sync volume slider and label
   document.getElementById("volume-slider").value = preferences.volume;
   document.getElementById("volume-value").textContent = preferences.volume + "%";
+
+  // Highlight active color swatch
+  updateSchemeSwatches(preferences.scheme);
 }
 
 // ── Game Selector ──
@@ -120,7 +162,6 @@ function handleGameDropdown() {
   let customInput = document.getElementById("game-custom-input");
 
   if (dropdown.value === "custom") {
-    // Reveal text field for custom game name
     customInput.classList.remove("hidden");
     customInput.focus();
   } else {
@@ -131,10 +172,7 @@ function handleGameDropdown() {
 function getSelectedGame() {
   let dropdown = document.getElementById("game-dropdown");
   let customInput = document.getElementById("game-custom-input");
-
-  if (dropdown.value === "custom") {
-    return customInput.value.trim() || "Unknown Game";
-  }
+  if (dropdown.value === "custom") return customInput.value.trim() || "Unknown Game";
   return dropdown.value || "Unknown Game";
 }
 
@@ -144,7 +182,7 @@ function startTimer() {
   let hours = parseInt(document.getElementById("hours-input").value) || 0;
   let minutes = parseInt(document.getElementById("minutes-input").value) || 0;
 
-  // Convert input to total seconds
+  // Convert to total seconds
   totalSeconds = (hours * 3600) + (minutes * 60);
 
   if (totalSeconds <= 0) {
@@ -154,7 +192,7 @@ function startTimer() {
 
   currentGame = getSelectedGame();
 
-  // Show pre-session intention modal before starting countdown
+  // Show intention prompt before starting
   document.getElementById("intention-modal").classList.remove("hidden");
 }
 
@@ -169,10 +207,7 @@ function beginCountdown() {
   sessionStartTime = new Date();
   isPaused = false;
 
-  // Show game name above the countdown digits
   document.getElementById("countdown-game-name").textContent = currentGame;
-
-  // Swap input UI for countdown UI
   document.getElementById("game-selector").classList.add("hidden");
   document.getElementById("time-inputs").classList.add("hidden");
   document.getElementById("countdown-display").classList.remove("hidden");
@@ -196,13 +231,13 @@ function beginCountdown() {
         document.getElementById("countdown-time").classList.add("warning");
       }
 
-      // Switch to danger color under 1 minute
+      // Danger color under 1 minute
       if (remainingSeconds <= 60) {
         document.getElementById("countdown-time").classList.remove("warning");
         document.getElementById("countdown-time").classList.add("danger");
       }
 
-      // Timer finished — play sound and open reflection modal
+      // Timer done — play sound and show reflection modal
       if (remainingSeconds <= 0) {
         clearInterval(timerInterval);
         document.getElementById("countdown-label").textContent = "Session Complete!";
@@ -231,7 +266,6 @@ function resetTimer() {
 }
 
 function resetTimerUI() {
-  // Restore all input fields and hide countdown elements
   document.getElementById("game-selector").classList.remove("hidden");
   document.getElementById("time-inputs").classList.remove("hidden");
   document.getElementById("countdown-display").classList.add("hidden");
@@ -247,8 +281,6 @@ function resetTimerUI() {
   document.getElementById("game-dropdown").value = "";
   document.getElementById("game-custom-input").classList.add("hidden");
   document.getElementById("game-custom-input").value = "";
-
-  // Hide and reset the progress bar
   document.getElementById("progress-bar-container").classList.add("hidden");
   document.getElementById("progress-bar-fill").style.width = "100%";
 }
@@ -259,7 +291,6 @@ function updateCountdownDisplay() {
   let h = Math.floor(remainingSeconds / 3600);
   let m = Math.floor((remainingSeconds % 3600) / 60);
   let s = remainingSeconds % 60;
-
   document.getElementById("countdown-time").textContent =
     String(h).padStart(2, "0") + ":" +
     String(m).padStart(2, "0") + ":" +
@@ -269,29 +300,24 @@ function updateCountdownDisplay() {
 // ── Progress Bar ──
 
 function updateProgressBar() {
-  // Shrink fill width proportionally as time runs out
+  // Shrink bar proportionally as time runs out
   let percent = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0;
   let fill = document.getElementById("progress-bar-fill");
   fill.style.width = percent + "%";
-
-  // Mirror warning/danger color states on the bar
   fill.classList.remove("warning", "danger");
-  if (remainingSeconds <= 60) {
-    fill.classList.add("danger");
-  } else if (remainingSeconds <= 300) {
-    fill.classList.add("warning");
-  }
+  if (remainingSeconds <= 60) fill.classList.add("danger");
+  else if (remainingSeconds <= 300) fill.classList.add("warning");
 }
 
 // ── Reflection Modal ──
 
 function preparePendingSession() {
-  // Build session object; mood gets attached after the user picks one
   let playedSeconds = totalSeconds - remainingSeconds;
   let playedMinutes = Math.round(playedSeconds / 60);
   let timeString = sessionStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   let dateString = sessionStartTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
+  // Build session — mood added after user picks one
   pendingSession = {
     game: currentGame,
     duration: playedMinutes,
@@ -307,7 +333,6 @@ function showReflectionModal() {
 }
 
 function selectMood(emoji, label) {
-  // Attach mood, save session, then close modal
   if (pendingSession) {
     pendingSession.mood = emoji + " " + label;
     sessions.push(pendingSession);
@@ -327,7 +352,7 @@ function updateLogDisplay() {
 
   document.getElementById("total-sessions").textContent = sessions.length;
 
-  // Sum all session durations
+  // Sum all durations for total mins
   let totalMins = sessions.reduce(function(sum, s) { return sum + s.duration; }, 0);
   document.getElementById("total-time").textContent = totalMins;
 
@@ -340,7 +365,7 @@ function updateLogDisplay() {
   logEmpty.classList.add("hidden");
   logList.innerHTML = "";
 
-  // Show newest sessions first
+  // Newest sessions first
   sessions.slice().reverse().forEach(function(session, index) {
     let item = document.createElement("div");
     item.classList.add("log-item");
@@ -377,30 +402,24 @@ function updateLibraryDisplay() {
     return;
   }
 
-  // Aggregate stats per game
+  // Aggregate per game
   let gameMap = {};
   sessions.forEach(function(s) {
-    if (!gameMap[s.game]) {
-      gameMap[s.game] = { sessions: 0, totalMins: 0, lastPlayed: s.date };
-    }
+    if (!gameMap[s.game]) gameMap[s.game] = { sessions: 0, totalMins: 0, lastPlayed: s.date };
     gameMap[s.game].sessions++;
     gameMap[s.game].totalMins += s.duration;
-    if (s.date > gameMap[s.game].lastPlayed) {
-      gameMap[s.game].lastPlayed = s.date;
-    }
+    if (s.date > gameMap[s.game].lastPlayed) gameMap[s.game].lastPlayed = s.date;
   });
 
-  // Show wellness nudge if over 15 hours in the past week
+  // Wellness nudge if over 15 hours this week
   let oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   let weekMins = sessions
     .filter(function(s) { return s.date >= oneWeekAgo; })
     .reduce(function(sum, s) { return sum + s.duration; }, 0);
   nudge.classList.toggle("hidden", weekMins < 900);
 
-  // Sort by total time played descending
-  let games = Object.entries(gameMap).sort(function(a, b) {
-    return b[1].totalMins - a[1].totalMins;
-  });
+  // Sort by most played
+  let games = Object.entries(gameMap).sort(function(a, b) { return b[1].totalMins - a[1].totalMins; });
 
   empty.classList.add("hidden");
   grid.innerHTML = "";
@@ -437,27 +456,23 @@ function saveSessionsToStorage() {
 function toggleTheme() {
   isDark = !isDark;
   let html = document.documentElement;
-  let moonIcon = document.getElementById("moon-icon");
-  let sunIcon = document.getElementById("sun-icon");
 
-  // Swap theme attribute and toggle icon
+  // Swap theme and icon
   if (isDark) {
     html.setAttribute("data-theme", "dark");
-    moonIcon.classList.remove("hidden");
-    sunIcon.classList.add("hidden");
+    document.getElementById("moon-icon").classList.remove("hidden");
+    document.getElementById("sun-icon").classList.add("hidden");
   } else {
     html.setAttribute("data-theme", "light");
-    sunIcon.classList.remove("hidden");
-    moonIcon.classList.add("hidden");
+    document.getElementById("sun-icon").classList.remove("hidden");
+    document.getElementById("moon-icon").classList.add("hidden");
   }
 }
 
 // ── Section Navigation ──
 
 function showSection(name) {
-  let sections = ["timer", "log", "library", "settings"];
-
-  sections.forEach(function(s) {
+  ["timer", "log", "library", "settings"].forEach(function(s) {
     let section = document.getElementById(s + "-section");
     let btn = document.getElementById("nav-" + s);
     if (s === name) {
@@ -474,7 +489,8 @@ function showSection(name) {
 
 // ── Init ──
 
-// Restore saved data and preferences on page load
+// Apply saved color scheme, then render stored data and UI state
+applyScheme(preferences.scheme || "purple");
 updateLogDisplay();
 updateLibraryDisplay();
 updateSettingsUI();

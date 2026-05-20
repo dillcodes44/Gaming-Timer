@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-scheme="purple">
 
 <head>
   <meta charset="UTF-8" />
@@ -48,7 +48,7 @@
     </div>
   </nav>
 
-  <!-- Progress bar sits flush under the navbar, hidden until a session starts -->
+  <!-- Progress bar sits flush under the navbar -->
   <div id="progress-bar-container" class="progress-bar-container hidden">
     <div id="progress-bar-fill" class="progress-bar-fill"></div>
   </div>
@@ -60,7 +60,6 @@
       <h1 class="timer-title">Set Your Session</h1>
       <p class="timer-subtitle">How long are you playing today?</p>
 
-      <!-- Game selector: dropdown + optional custom input -->
       <div class="game-selector" id="game-selector">
         <label class="game-label">What are you playing?</label>
         <select id="game-dropdown" class="game-dropdown" onchange="handleGameDropdown()">
@@ -126,40 +125,32 @@
   <!-- ── SESSION LOG SECTION ── -->
   <section id="log-section" class="section hidden">
     <div class="log-card">
-
       <div class="log-header">
         <h2 class="log-title">Session Log</h2>
         <button class="btn btn-ghost" onclick="clearLog()">Clear All</button>
       </div>
-
       <div class="log-stats">
         <div class="stat-pill"><span id="total-sessions">0</span> sessions</div>
         <div class="stat-pill"><span id="total-time">0</span> mins total</div>
       </div>
-
       <div id="log-list" class="log-list">
         <div class="log-empty" id="log-empty">No sessions yet. Start a timer to log your first session.</div>
       </div>
-
     </div>
   </section>
 
   <!-- ── GAME LIBRARY SECTION ── -->
   <section id="library-section" class="section hidden">
     <div class="library-card">
-
       <div class="log-header">
         <h2 class="log-title">🎮 Game Library</h2>
       </div>
-
       <div id="wellness-nudge" class="wellness-nudge hidden">
         🧘 You've logged a lot of gaming this week. Remember to stretch, hydrate, and rest your eyes!
       </div>
-
       <div id="library-grid" class="library-grid">
         <div class="log-empty" id="library-empty">No games tracked yet. Start a session to build your library.</div>
       </div>
-
     </div>
   </section>
 
@@ -168,14 +159,27 @@
     <div class="settings-card">
 
       <h2 class="log-title">⚙️ Settings</h2>
-      <p class="timer-subtitle" style="margin-top: -8px;">Your preferences are saved automatically.</p>
+      <p class="timer-subtitle" style="margin-top:-8px;">Your preferences are saved automatically.</p>
+
+      <!-- Color scheme picker -->
+      <div class="settings-group">
+        <div class="settings-label">Color Scheme</div>
+        <div class="settings-description">Pick an accent color for the whole app.</div>
+        <div class="scheme-swatches">
+          <button class="swatch" data-scheme="purple" style="background:#6c63ff;" onclick="selectScheme('purple')" title="Purple"></button>
+          <button class="swatch" data-scheme="blue"   style="background:#3b82f6;" onclick="selectScheme('blue')"   title="Blue"></button>
+          <button class="swatch" data-scheme="green"  style="background:#22c55e;" onclick="selectScheme('green')"  title="Green"></button>
+          <button class="swatch" data-scheme="red"    style="background:#ef4444;" onclick="selectScheme('red')"    title="Red"></button>
+          <button class="swatch" data-scheme="orange" style="background:#f97316;" onclick="selectScheme('orange')" title="Orange"></button>
+          <button class="swatch" data-scheme="pink"   style="background:#ec4899;" onclick="selectScheme('pink')"   title="Pink"></button>
+        </div>
+      </div>
 
       <!-- Sound style preference -->
       <div class="settings-group">
         <div class="settings-label">End-of-session sound</div>
         <div class="settings-description">Choose what plays when your timer finishes.</div>
         <div class="sound-options">
-
           <div class="sound-option" id="sound-opt-chime" onclick="selectSound('chime')">
             <div class="sound-option-icon">🧘</div>
             <div class="sound-option-info">
@@ -184,7 +188,6 @@
             </div>
             <button class="preview-btn" onclick="event.stopPropagation(); previewSound('chime')">▶ Preview</button>
           </div>
-
           <div class="sound-option" id="sound-opt-game" onclick="selectSound('game')">
             <div class="sound-option-icon">🎮</div>
             <div class="sound-option-info">
@@ -193,7 +196,6 @@
             </div>
             <button class="preview-btn" onclick="event.stopPropagation(); previewSound('game')">▶ Preview</button>
           </div>
-
           <div class="sound-option" id="sound-opt-none" onclick="selectSound('none')">
             <div class="sound-option-icon">🔇</div>
             <div class="sound-option-info">
@@ -201,7 +203,6 @@
               <div class="sound-option-desc">Silent finish</div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -219,7 +220,7 @@
     </div>
   </section>
 
-  <!-- ── INTENTION MODAL (pre-session) ── -->
+  <!-- ── INTENTION MODAL ── -->
   <div id="intention-modal" class="modal-overlay hidden">
     <div class="modal">
       <h2 class="modal-title">Before you dive in...</h2>
@@ -233,10 +234,9 @@
     </div>
   </div>
 
-  <!-- ── REFLECTION MODAL (post-session) ── -->
+  <!-- ── REFLECTION MODAL ── -->
   <div id="reflection-modal" class="modal-overlay hidden">
     <div class="modal reflection-modal-inner">
-      <!-- Pulsing ring around the checkmark -->
       <div class="completion-ring">
         <div class="completion-ring-pulse"></div>
         <div class="completion-check">✓</div>
