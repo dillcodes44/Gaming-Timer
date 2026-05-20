@@ -441,14 +441,10 @@ body {
   cursor: pointer;
   position: relative;
   transition: transform 0.15s;
-  /* Ring is drawn as an outline outside the circle */
   outline: 3px solid transparent;
   outline-offset: 3px;
 }
-
 .swatch:hover { transform: scale(1.1); }
-
-/* When selected, show a ring in the swatch's own color */
 .swatch.selected {
   outline-color: var(--swatch-ring);
   transform: scale(1.08);
@@ -514,7 +510,6 @@ body {
   transition: transform 0.15s;
 }
 .volume-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
-
 .volume-value { font-size: 0.85rem; font-weight: 700; color: var(--accent); width: 36px; text-align: right; }
 
 /* ── Modals ── */
@@ -525,9 +520,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  /* Must be above navbar (100) and progress bar (99) */
+  z-index: 300;
   padding: 20px;
   backdrop-filter: blur(4px);
+  /* Ensure clicks pass through to modal children */
+  pointer-events: all;
 }
 
 .modal {
@@ -542,6 +540,10 @@ body {
   align-items: center;
   gap: 20px;
   animation: modal-in 0.25s ease;
+  /* Sit above the overlay backdrop */
+  position: relative;
+  z-index: 301;
+  pointer-events: all;
 }
 
 @keyframes modal-in {
@@ -568,6 +570,8 @@ body {
   border-radius: 50%;
   border: 3px solid var(--accent);
   animation: ring-pulse 1.5s ease-out infinite;
+  /* Don't block clicks on elements behind it */
+  pointer-events: none;
 }
 
 @keyframes ring-pulse {
@@ -588,6 +592,8 @@ body {
   color: var(--accent);
   font-weight: 900;
   animation: check-pop 0.3s ease;
+  /* Don't block clicks */
+  pointer-events: none;
 }
 
 @keyframes check-pop {
@@ -611,6 +617,9 @@ body {
   cursor: pointer;
   text-align: left;
   transition: all 0.2s;
+  /* Ensure clicks register */
+  position: relative;
+  z-index: 302;
 }
 .intention-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(108, 99, 255, 0.06); }
 
@@ -631,6 +640,9 @@ body {
   gap: 8px;
   font-size: 2rem;
   transition: all 0.2s;
+  /* Ensure clicks register above the animated ring */
+  position: relative;
+  z-index: 302;
 }
 .mood-btn span { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 .mood-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
