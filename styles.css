@@ -271,13 +271,10 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
-
 .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
 .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-
 .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
 .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
 
@@ -338,7 +335,6 @@ body {
   border: 1px solid var(--border);
   font-size: 0.9rem;
 }
-
 .log-item-left { display: flex; flex-direction: column; gap: 3px; }
 .log-item-duration { font-weight: 700; font-size: 1rem; }
 .log-item-time { font-size: 0.78rem; color: var(--text-muted); }
@@ -425,13 +421,8 @@ body {
 .settings-label { font-size: 1rem; font-weight: 700; }
 .settings-description { font-size: 0.85rem; color: var(--text-muted); margin-top: -4px; }
 
-/* ── Color Scheme Swatches ── */
-.scheme-swatches {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
+/* ── Color Swatches ── */
+.scheme-swatches { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
 
 .swatch {
   width: 40px;
@@ -439,16 +430,12 @@ body {
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  position: relative;
   transition: transform 0.15s;
   outline: 3px solid transparent;
   outline-offset: 3px;
 }
 .swatch:hover { transform: scale(1.1); }
-.swatch.selected {
-  outline-color: var(--swatch-ring);
-  transform: scale(1.08);
-}
+.swatch.selected { outline-color: var(--swatch-ring); transform: scale(1.08); }
 
 /* ── Sound Options ── */
 .sound-options { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
@@ -487,7 +474,7 @@ body {
 }
 .preview-btn:hover { background: var(--accent); color: white; }
 
-/* ── Volume Slider ── */
+/* ── Volume ── */
 .volume-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
 .volume-icon { font-size: 1.1rem; }
 
@@ -520,12 +507,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Must be above navbar (100) and progress bar (99) */
-  z-index: 300;
+  z-index: 500;
   padding: 20px;
   backdrop-filter: blur(4px);
-  /* Ensure clicks pass through to modal children */
-  pointer-events: all;
 }
 
 .modal {
@@ -540,10 +524,6 @@ body {
   align-items: center;
   gap: 20px;
   animation: modal-in 0.25s ease;
-  /* Sit above the overlay backdrop */
-  position: relative;
-  z-index: 301;
-  pointer-events: all;
 }
 
 @keyframes modal-in {
@@ -554,51 +534,15 @@ body {
 .modal-title { font-size: 1.4rem; font-weight: 900; text-align: center; }
 .modal-subtitle { font-size: 0.9rem; color: var(--text-muted); text-align: center; margin-top: -10px; }
 
-/* ── Completion Ring ── */
-.completion-ring {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.completion-ring-pulse {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 3px solid var(--accent);
-  animation: ring-pulse 1.5s ease-out infinite;
-  /* Don't block clicks on elements behind it */
-  pointer-events: none;
-}
-
-@keyframes ring-pulse {
-  0%   { transform: scale(1);   opacity: 0.8; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-
-.completion-check {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(108, 99, 255, 0.15);
-  border: 2px solid var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  color: var(--accent);
-  font-weight: 900;
-  animation: check-pop 0.3s ease;
-  /* Don't block clicks */
-  pointer-events: none;
+/* Completion emoji shown at top of reflection modal */
+.completion-emoji {
+  font-size: 3rem;
+  animation: check-pop 0.4s ease;
 }
 
 @keyframes check-pop {
   0%   { transform: scale(0.5); opacity: 0; }
-  70%  { transform: scale(1.1); }
+  70%  { transform: scale(1.2); }
   100% { transform: scale(1);   opacity: 1; }
 }
 
@@ -617,9 +561,6 @@ body {
   cursor: pointer;
   text-align: left;
   transition: all 0.2s;
-  /* Ensure clicks register */
-  position: relative;
-  z-index: 302;
 }
 .intention-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(108, 99, 255, 0.06); }
 
@@ -639,10 +580,7 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 2rem;
-  transition: all 0.2s;
-  /* Ensure clicks register above the animated ring */
-  position: relative;
-  z-index: 302;
+  transition: border-color 0.2s, transform 0.2s;
 }
 .mood-btn span { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 .mood-btn:hover { border-color: var(--accent); transform: translateY(-2px); }

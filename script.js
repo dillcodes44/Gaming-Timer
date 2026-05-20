@@ -15,7 +15,6 @@ let preferences = JSON.parse(localStorage.getItem("preferences") || '{"sound":"c
 
 // ── Color Schemes ──
 
-// Each scheme defines an accent and a slightly darker hover shade
 const COLOR_SCHEMES = {
   purple: { accent: "#6c63ff", hover: "#5a52e0" },
   blue:   { accent: "#3b82f6", hover: "#2563eb" },
@@ -35,20 +34,13 @@ function selectScheme(name) {
 function applyScheme(name) {
   let scheme = COLOR_SCHEMES[name] || COLOR_SCHEMES.purple;
   let root = document.documentElement;
-
-  // Swap the two accent CSS variables globally — everything updates instantly
   root.style.setProperty("--accent", scheme.accent);
   root.style.setProperty("--accent-hover", scheme.hover);
-
-  // Also update the swatch ring color to match
   root.style.setProperty("--swatch-ring", scheme.accent);
-
-  // Mark which scheme is active on the html element for CSS targeting
   root.setAttribute("data-scheme", name);
 }
 
 function updateSchemeSwatches(activeName) {
-  // Add/remove the selected ring on each swatch
   document.querySelectorAll(".swatch").forEach(function(swatch) {
     swatch.classList.toggle("selected", swatch.dataset.scheme === activeName);
   });
@@ -59,7 +51,6 @@ function updateSchemeSwatches(activeName) {
 let audioCtx = null;
 
 function getAudioContext() {
-  // Must be created after a user gesture
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
@@ -69,10 +60,9 @@ function getAudioContext() {
 // ── Sound Engine ──
 
 function playChime(volume) {
-  // Soft meditation bell — three sine tones that fade out gently
+  // Soft meditation bell — three sine tones fading out
   let ctx = getAudioContext();
   let vol = (volume / 100) * 0.6;
-
   [[523.25, 0], [659.25, 0.3], [783.99, 0.6]].forEach(function(note) {
     let osc = ctx.createOscillator();
     let gain = ctx.createGain();
@@ -89,10 +79,9 @@ function playChime(volume) {
 }
 
 function playGameSound(volume) {
-  // Achievement unlock — ascending arpeggio with punchy attack
+  // Achievement unlock — ascending arpeggio
   let ctx = getAudioContext();
   let vol = (volume / 100) * 0.5;
-
   [[392, 0], [523.25, 0.12], [659.25, 0.24], [783.99, 0.36], [1046.5, 0.48]].forEach(function(note) {
     let osc = ctx.createOscillator();
     let gain = ctx.createGain();
@@ -109,7 +98,6 @@ function playGameSound(volume) {
 }
 
 function playEndSound() {
-  // Play whichever sound the user selected
   if (preferences.sound === "chime") playChime(preferences.volume);
   else if (preferences.sound === "game") playGameSound(preferences.volume);
 }
@@ -138,20 +126,13 @@ function savePreferences() {
 }
 
 function updateSettingsUI() {
-  // Highlight selected sound card
   ["chime", "game", "none"].forEach(function(type) {
     let el = document.getElementById("sound-opt-" + type);
     if (el) el.classList.toggle("selected", preferences.sound === type);
   });
-
-  // Hide volume when sound is off
   document.getElementById("volume-group").classList.toggle("hidden", preferences.sound === "none");
-
-  // Sync volume slider and label
   document.getElementById("volume-slider").value = preferences.volume;
   document.getElementById("volume-value").textContent = preferences.volume + "%";
-
-  // Highlight active color swatch
   updateSchemeSwatches(preferences.scheme);
 }
 
@@ -160,7 +141,6 @@ function updateSettingsUI() {
 function handleGameDropdown() {
   let dropdown = document.getElementById("game-dropdown");
   let customInput = document.getElementById("game-custom-input");
-
   if (dropdown.value === "custom") {
     customInput.classList.remove("hidden");
     customInput.focus();
@@ -176,13 +156,11 @@ function getSelectedGame() {
   return dropdown.value || "Unknown Game";
 }
 
-// ── Intention Modal ──
+// ── Timer ──
 
 function startTimer() {
   let hours = parseInt(document.getElementById("hours-input").value) || 0;
   let minutes = parseInt(document.getElementById("minutes-input").value) || 0;
-
-  // Convert to total seconds
   totalSeconds = (hours * 3600) + (minutes * 60);
 
   if (totalSeconds <= 0) {
@@ -191,8 +169,7 @@ function startTimer() {
   }
 
   currentGame = getSelectedGame();
-
-  // Show intention prompt before starting
+  // Show intention prompt first
   document.getElementById("intention-modal").classList.remove("hidden");
 }
 
@@ -225,26 +202,23 @@ function beginCountdown() {
       updateCountdownDisplay();
       updateProgressBar();
 
-      // Warn when under 5 minutes
       if (remainingSeconds <= 300 && remainingSeconds > 0) {
         document.getElementById("warning-banner").classList.remove("hidden");
         document.getElementById("countdown-time").classList.add("warning");
       }
 
-      // Danger color under 1 minute
       if (remainingSeconds <= 60) {
         document.getElementById("countdown-time").classList.remove("warning");
         document.getElementById("countdown-time").classList.add("danger");
       }
 
-      // Timer done — play sound and show reflection modal
       if (remainingSeconds <= 0) {
         clearInterval(timerInterval);
-        document.getElementById("countdown-label").textContent = "Session Complete!";
+        // Play sound, build session, show reflection modal
+        // NOTE: resetTimerUI is NOT called here — it runs after mood is selected
         playEndSound();
         preparePendingSession();
         showReflectionModal();
-        resetTimerUI();
       }
     }
   }, 1000);
@@ -266,6 +240,7 @@ function resetTimer() {
 }
 
 function resetTimerUI() {
+  // Restore all input fields, hide countdown
   document.getElementById("game-selector").classList.remove("hidden");
   document.getElementById("time-inputs").classList.remove("hidden");
   document.getElementById("countdown-display").classList.add("hidden");
@@ -300,7 +275,6 @@ function updateCountdownDisplay() {
 // ── Progress Bar ──
 
 function updateProgressBar() {
-  // Shrink bar proportionally as time runs out
   let percent = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0;
   let fill = document.getElementById("progress-bar-fill");
   fill.style.width = percent + "%";
@@ -317,7 +291,6 @@ function preparePendingSession() {
   let timeString = sessionStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   let dateString = sessionStartTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
-  // Build session — mood added after user picks one
   pendingSession = {
     game: currentGame,
     duration: playedMinutes,
@@ -333,6 +306,7 @@ function showReflectionModal() {
 }
 
 function selectMood(emoji, label) {
+  // Save mood, log session, close modal, THEN reset the timer UI
   if (pendingSession) {
     pendingSession.mood = emoji + " " + label;
     sessions.push(pendingSession);
@@ -342,6 +316,7 @@ function selectMood(emoji, label) {
     pendingSession = null;
   }
   document.getElementById("reflection-modal").classList.add("hidden");
+  resetTimerUI();
 }
 
 // ── Session Log ──
@@ -351,8 +326,6 @@ function updateLogDisplay() {
   let logEmpty = document.getElementById("log-empty");
 
   document.getElementById("total-sessions").textContent = sessions.length;
-
-  // Sum all durations for total mins
   let totalMins = sessions.reduce(function(sum, s) { return sum + s.duration; }, 0);
   document.getElementById("total-time").textContent = totalMins;
 
@@ -365,7 +338,6 @@ function updateLogDisplay() {
   logEmpty.classList.add("hidden");
   logList.innerHTML = "";
 
-  // Newest sessions first
   sessions.slice().reverse().forEach(function(session, index) {
     let item = document.createElement("div");
     item.classList.add("log-item");
@@ -402,7 +374,6 @@ function updateLibraryDisplay() {
     return;
   }
 
-  // Aggregate per game
   let gameMap = {};
   sessions.forEach(function(s) {
     if (!gameMap[s.game]) gameMap[s.game] = { sessions: 0, totalMins: 0, lastPlayed: s.date };
@@ -411,14 +382,12 @@ function updateLibraryDisplay() {
     if (s.date > gameMap[s.game].lastPlayed) gameMap[s.game].lastPlayed = s.date;
   });
 
-  // Wellness nudge if over 15 hours this week
   let oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   let weekMins = sessions
     .filter(function(s) { return s.date >= oneWeekAgo; })
     .reduce(function(sum, s) { return sum + s.duration; }, 0);
   nudge.classList.toggle("hidden", weekMins < 900);
 
-  // Sort by most played
   let games = Object.entries(gameMap).sort(function(a, b) { return b[1].totalMins - a[1].totalMins; });
 
   empty.classList.add("hidden");
@@ -456,8 +425,6 @@ function saveSessionsToStorage() {
 function toggleTheme() {
   isDark = !isDark;
   let html = document.documentElement;
-
-  // Swap theme and icon
   if (isDark) {
     html.setAttribute("data-theme", "dark");
     document.getElementById("moon-icon").classList.remove("hidden");
@@ -488,8 +455,6 @@ function showSection(name) {
 }
 
 // ── Init ──
-
-// Apply saved color scheme, then render stored data and UI state
 applyScheme(preferences.scheme || "purple");
 updateLogDisplay();
 updateLibraryDisplay();

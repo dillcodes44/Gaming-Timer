@@ -161,7 +161,6 @@
       <h2 class="log-title">⚙️ Settings</h2>
       <p class="timer-subtitle" style="margin-top:-8px;">Your preferences are saved automatically.</p>
 
-      <!-- Color scheme picker -->
       <div class="settings-group">
         <div class="settings-label">Color Scheme</div>
         <div class="settings-description">Pick an accent color for the whole app.</div>
@@ -175,7 +174,6 @@
         </div>
       </div>
 
-      <!-- Sound style preference -->
       <div class="settings-group">
         <div class="settings-label">End-of-session sound</div>
         <div class="settings-description">Choose what plays when your timer finishes.</div>
@@ -206,7 +204,6 @@
         </div>
       </div>
 
-      <!-- Volume slider -->
       <div class="settings-group" id="volume-group">
         <div class="settings-label">Volume</div>
         <div class="volume-row">
@@ -236,12 +233,10 @@
 
   <!-- ── REFLECTION MODAL ── -->
   <div id="reflection-modal" class="modal-overlay hidden">
-    <div class="modal reflection-modal-inner">
-      <div class="completion-ring">
-        <div class="completion-ring-pulse"></div>
-        <div class="completion-check">✓</div>
-      </div>
-      <h2 class="modal-title">Session Complete! 🎉</h2>
+    <div class="modal">
+      <!-- Simple emoji replaces the animated ring that was blocking clicks -->
+      <div class="completion-emoji">🎉</div>
+      <h2 class="modal-title">Session Complete!</h2>
       <p class="modal-subtitle">Take a breath. How are you feeling?</p>
       <div class="mood-options">
         <button class="mood-btn" onclick="selectMood('😤', 'Frustrated')">😤<span>Frustrated</span></button>
